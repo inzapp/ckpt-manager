@@ -89,32 +89,45 @@ class CheckpointManager:
         for last_model_path in glob(f'{self.checkpoint_path}/last_*.h5'):
             os.remove(last_model_path)
 
-    def save_last_model(self, model, iteration_count, content='', remove=True):
+    def save_last_model(self, model, iteration_count, content=''):
         self.make_checkpoint_dir()
         save_path = f'{self.checkpoint_path}/last_{iteration_count}_iter{content}.h5'
         model.save(save_path, include_optimizer=False)
         backup_path = f'{save_path}.bak'
         sh.move(save_path, backup_path)
-        if remove:
-            self.remove_last_model()
+        self.remove_last_model()
         sh.move(backup_path, save_path)
         return save_path
+
+    def get_last_model_path(self, path):
+        model_path = None
+        paths = glob(f'{path}/last_*.h5')
+        if len(path) > 0:
+            model_path = paths[0]
+        return model_path
 
     def remove_best_model(self):
         for best_model_path in glob(f'{self.checkpoint_path}/best_*.h5'):
             os.remove(best_model_path)
 
-    def save_best_model(self, model, iteration_count, metric, content='', remove=True, force=False):
+    def save_best_model(self, model, iteration_count, metric, mode='', content=''):
+        assert mode in ['min', 'max']
         save_path = None
-        if force or self.best_metric is None or metric > self.best_metric:
+        if (self.best_metric is None) or (metric < self.best_metric if mode == 'min' else metric > self.best_metric):
             self.best_metric = metric
             self.make_checkpoint_dir()
             save_path = f'{self.checkpoint_path}/best_{iteration_count}_iter{content}.h5'
             model.save(save_path, include_optimizer=False)
             backup_path = f'{save_path}.bak'
             sh.move(save_path, backup_path)
-            if remove:
-                self.remove_best_model()
+            self.remove_best_model()
             sh.move(backup_path, save_path)
         return save_path
+
+    def get_best_model_path(self, path):
+        model_path = None
+        paths = glob(f'{path}/best_*.h5')
+        if len(path) > 0:
+            model_path = paths[0]
+        return model_path
 
