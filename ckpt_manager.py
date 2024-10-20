@@ -35,6 +35,7 @@ class CheckpointManager:
         self.model_name = None
         self.checkpoint_path = None
         self.best_metric = None
+        self.pretrained_iteration_count = 0
 
     def set_model_name(self, model_name):
         self.model_name = model_name
